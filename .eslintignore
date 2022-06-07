@@ -1,0 +1,9 @@
+/**/*.js
+build
+dist
+vendor
+node_modules
+.yarn
+.next
+out
+logs
