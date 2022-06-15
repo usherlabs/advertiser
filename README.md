@@ -1,2 +1,2 @@
-# `uarad` - Usher Arweave Advertiser CLI
+# `usherad` - Usher Advertiser CLI
 
