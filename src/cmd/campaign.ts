@@ -5,50 +5,34 @@
 
 import chalk from "chalk";
 import mkdirp from "mkdirp";
-import { Command } from "commander";
+import { Command, Option } from "commander";
 import path from "path";
-// import { DataModel } from "@glazed/datamodel";
-// import AdvertiserModel from "../models/Advertiser.json";
-import { getCeramic } from "../utils/manager";
-
-// const getDoc = async () => {
-// 	const ceramic = await getCeramic();
-// 	const model = new DataModel({ ceramic, aliases: AdvertiserModel });
-// 	const doc = await model.loadTile("ar_campaigns");
-// 	if (!doc) {
-// 		console.log(chalk.red(`Cannot load the Usher Advertiser Stream!`));
-// 		process.exit(1);
-// 	}
-// 	return doc;
-// };
-
-const defaultConfig = {
-	//* Campaign property is immutable once deployed
-	campaign: {
-		events: [
-			{
-				strategy: "flat",
-				rate: 0.1
-			}
-		]
-	},
-	//* Details and Adveriser related data can be configured after the campaign is deployed.
-	details: {
-		destination_url: "https://usher.so/?ref=usher-partner",
-		name: "This is my cool referral program",
-		description:
-			"Earn rewards when you refer users that register on our website!",
-		image: "", // Internet accessible URL to an image relevant to this referral program
-		external_link: "https://usher.so" // Link to a web page that explains the referral program
-	}
-};
+import createCampaign from "@/lib/campaign/create";
+import updateCampaign from "@/lib/campaign/update";
+import deployCampaign from "@/lib/campaign/deploy";
+import startCampaign from "@/lib/campaign/start";
+import CampaignDetailsSchema from "@/schema/CampaignDetails.json";
 
 const cmd = new Command();
 
 cmd
+	.name("campaign")
+	.description("Manage your Usher Advertiser Campaign directly from the CLI")
+	.option(
+		"-k, --key",
+		`Arweave Private Key (JWK). Used for authenticated ${chalk.yellow(
+			"update"
+		)}s, for ${chalk.yellow("deploy")}ments and to ${chalk.yellow(
+			"start"
+		)} managing payouts for a campaign`
+	);
+
+const createCmd = new Command();
+
+createCmd
 	.name("create")
-	.description("Create a new configuration for the Arweave Advertiser Campaign")
-	.argument("<string>", "Name of the Campaign.")
+	.description("Create a new configuration for an Arweave Advertiser Campaign")
+	.argument("<name>", "Name of the Campaign.")
 	.option(
 		"-d, --directory",
 		"The directory that you would like to create the campaign in."
@@ -58,6 +42,70 @@ cmd
 		if (options.directory) {
 			await mkdirp(dir);
 		}
+		await createCampaign(args.name, dir);
+		console.log(chalk.green(`Campaign ${args.name} files created at ${dir}.`));
+		console.log(`Configure these files before deploying.`);
 	});
+
+const updateCmd = new Command();
+
+updateCmd
+	.name("update")
+	.description("Update ONLY the details of a deployed Campaign")
+	.argument("<address>", "Blockchain Address of the Campaign.")
+	.action(async (args, { key, ...options }) => {
+		await updateCampaign(key, args.address, options);
+		console.log(chalk.green(`Campaign ${args.address} has been updated.`));
+	});
+
+Object.entries<{ description: string }>(
+	CampaignDetailsSchema.properties
+).forEach(([key, value]) => {
+	const opt = new Option(`--${key}`, value.description || "");
+	updateCmd.addOption(opt);
+});
+
+const deployCmd = new Command();
+
+deployCmd
+	.name("deploy")
+	.description("Deployed the Campaign using the configuration files")
+	.argument("<name>", "Name of the Campaign.")
+	.option(
+		"-d, --directory",
+		"The directory that you would like to create the campaign in."
+	)
+	.action(async (args, { key, ...options }) => {
+		const dir = path.resolve(process.cwd(), options.directory || ".");
+		const tx = await deployCampaign(key, args.name, dir);
+		console.log(
+			chalk.green(`Campaign ${args.name} has been deployed to address ${tx}.`)
+		);
+		console.log(
+			`You can visit https://arweave.net/${tx} to see the campaign terms.`
+		);
+		console.log(
+			chalk.cyan(
+				`Submit the Campaign address ${tx} to Usher by visiting https://go.usher.so/start-a-campaign`
+			)
+		);
+	});
+
+const startCmd = new Command();
+
+startCmd
+	.name("start")
+	.description(
+		"Start the payout management node for the Arweave Advertiser Campaign"
+	)
+	.argument("<address>", "Blockchain Address of the Campaign.")
+	.action(async (args, { key }) => {
+		await startCampaign(key, args.address);
+	});
+
+cmd.addCommand(createCmd);
+cmd.addCommand(updateCmd);
+cmd.addCommand(deployCmd);
+cmd.addCommand(startCmd);
 
 export default cmd;

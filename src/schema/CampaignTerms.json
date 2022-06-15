@@ -1,0 +1,49 @@
+{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"title": "Campaign",
+	"description": "Schema for the Terms of the Campaign created and deployed to compatible Blockchains.",
+	"type": "object",
+	"properties": {
+		"events": {
+			"type": "array",
+			"items": {
+				"type": "object",
+				"properties": {
+					"strategy": {
+						"type": "string",
+						"enum": ["flat", "percentage"],
+						"description": "The strategy for which to calculate the rewards. Flat rewards are calculated per event. Percentage based rewards are calculated based on an amount value submitted at the point of conversion."
+					},
+					"rate": {
+						"type": "number",
+						"minimum": 0,
+						"description": "The reward rate."
+					},
+					"limit": {
+						"type": "integer",
+						"minimum": 0,
+						"description": "An arbitrary value that limits the rewards that can be earned by a Partner for this given event."
+					}
+				},
+				"required": ["rate"]
+			},
+			"description": "A conversion event for the Campaign."
+		},
+		"reward": {
+			"type": "object",
+			"properties": {
+				"address": {
+					"type": "string",
+					"description": "A blockchain Smart Contract address indicating whether the reward is a PST, NFT, or custom Token. If this value is not provided, the reward will default to native currency for the given Blockchain."
+				},
+				"limit": {
+					"type": "integer",
+					"minimum": 0,
+					"description": "A limit on the total rewards for the Campaign."
+				}
+			},
+			"description": "Data supporting the reward that is calculated per conversion."
+		}
+	},
+	"required": ["events"]
+}
