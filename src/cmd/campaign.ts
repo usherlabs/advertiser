@@ -1,8 +1,3 @@
-/**
- * Create a configuration to a
- * glaze model:add ar-network tile campaigns '{ "set": [] }' --schema=ceramic:// --key=
- */
-
 import chalk from "chalk";
 import mkdirp from "mkdirp";
 import { Command, Option } from "commander";
