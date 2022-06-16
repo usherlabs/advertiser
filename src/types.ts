@@ -13,8 +13,8 @@ export enum Chains {
 }
 
 export enum CampaignConflictStrategy {
-	OVERWRITE = "OVERWRITE",
-	PASSTHROUGH = "PASSTHROUGH"
+	OVERWRITE = "overwrite",
+	PASSTHROUGH = "passthrough"
 }
 
 export enum CampaignStrategies {
@@ -42,9 +42,7 @@ export type CampaignDetails = {
 	externalLink?: string;
 };
 
-export type Campaign = {
-	id: string;
-	owner: string;
+export type CampaignTerms = {
 	events: {
 		strategy: CampaignStrategies;
 		rate: number;
@@ -54,9 +52,12 @@ export type Campaign = {
 		address?: string; // Left empty to use Chain's native token
 		limit?: number;
 	};
-	conflictStrategy: CampaignConflictStrategy;
-	details: CampaignDetails;
-	advertiser: Advertiser;
+	conflictStrategy?: CampaignConflictStrategy;
+};
+
+export type Campaign = CampaignTerms & {
+	details: CampaignDetails | string;
+	advertiser: Advertiser | string;
 };
 
 /**

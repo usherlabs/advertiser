@@ -1,8 +1,9 @@
 import { Command } from "commander";
-import arCampaignsCmd from "./cmd/arcampaigns";
+
+import campaignsCmd from "@/cmd/campaign";
 
 const program = new Command();
 
-program.addCommand(arCampaignsCmd);
+program.addCommand(campaignsCmd);
 
 program.parse(process.argv);

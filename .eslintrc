@@ -4,11 +4,6 @@
     "airbnb-base",
     "plugin:prettier/recommended"
   ],
-	"settings": {
-		"next": {
-			"rootDir": "packages/*/"
-		}
-	},
   "rules": {
     "prettier/prettier": [
       "error",
@@ -22,14 +17,14 @@
   "overrides": [
     // Configuration for TypeScript files
     {
-      "files": ["**/*.ts", "**/*.tsx"],
+      "files": ["**/*.ts"],
       "plugins": [
         "@typescript-eslint",
 				"import",
         "unused-imports"
       ],
       "extends": [
-        "airbnb-typescript",
+        "airbnb-typescript/base",
         "plugin:prettier/recommended"
       ],
       "parserOptions": {
@@ -45,6 +40,7 @@
 			},
       "rules": {
 				"no-console": "off",
+				"no-underscore-dangle": "off",
         "prettier/prettier": [
           "error",
           {

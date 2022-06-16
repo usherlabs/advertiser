@@ -1,6 +1,5 @@
 import { DID } from "dids";
 import * as uint8arrays from "uint8arrays";
-import ono from "@jsdevtools/ono";
 import { Sha256 } from "@aws-crypto/sha256-js";
 import { CeramicClient } from "@ceramicnetwork/http-client";
 import { getResolver as getKeyResolver } from "key-did-resolver";
@@ -8,13 +7,11 @@ import { getResolver as get3IDResolver } from "@ceramicnetwork/3id-did-resolver"
 import { ThreeIdProvider } from "@3id/did-provider";
 import { DataModel } from "@glazed/datamodel";
 import { DIDDataStore } from "@glazed/did-datastore";
+import { JWKInterface } from "arweave/node/lib/wallet";
 
-import getArweaveClient from "@/utils/arweave-client";
-import { Chains, Connections, IDataModel, IDIDDataStore } from "@/types";
-import { ceramicUrl } from "./env-config";
+import { Chains, IDataModel, IDIDDataStore } from "@/types";
 import { AdvertiserModel } from "@/models";
-
-const arweave = getArweaveClient();
+import { ceramicUrl } from "@/env-config";
 
 class Authenticate {
 	private static instance: Authenticate | null;
@@ -46,6 +43,14 @@ class Authenticate {
 		return this._ceramic;
 	}
 
+	public getStore() {
+		return this.store;
+	}
+
+	public getModel() {
+		return this.model;
+	}
+
 	/**
 	 * Deterministically produce a secret for DID production
 	 */
@@ -58,8 +63,7 @@ class Authenticate {
 						data: Uint8Array,
 						algorithm: RsaPssParams
 					) => Promise<Uint8Array>;
-			  },
-		connection: Connections
+			  }
 	): Promise<void> {
 		const arr = uint8arrays.fromString(walletAddress);
 		const sig = await provider.signature(arr, {
@@ -99,7 +103,7 @@ class Authenticate {
 		this._did = did;
 	}
 
-	private static nativeArweaveProvider(jwk: Object) {
+	public static nativeArweaveProvider(jwk: JWKInterface) {
 		return {
 			// We're reimplementing the signature mechanism to allow for 0 salt length -- as the ArweaveJS forces 32
 			async signature(data: Uint8Array, algorithm: RsaPssParams) {
